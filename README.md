@@ -1,3 +1,7 @@
+index.html , AI_verse.py and requirements.txt are created by collaborators.
+
+Remaining files are created by docker init command.
+
 # How to run it
 
 Install wsl
