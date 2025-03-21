@@ -28,3 +28,4 @@ Run this in docker container , this redirects to output
 
 ![image](https://github.com/user-attachments/assets/abbfb7bb-1653-4e3d-a82c-12e46affb6c6)
 
+Upload a file to check if that video is deepfake or real
