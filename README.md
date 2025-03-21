@@ -29,3 +29,9 @@ Run this in docker container , this redirects to output
 ![image](https://github.com/user-attachments/assets/abbfb7bb-1653-4e3d-a82c-12e46affb6c6)
 
 Upload a file to check if that video is deepfake or real
+
+![image](https://github.com/user-attachments/assets/2244b872-cb9b-4108-8582-3e82e580fcc8)
+
+![image](https://github.com/user-attachments/assets/41261896-9f81-448e-a62a-feaa799eb867)
+
+
