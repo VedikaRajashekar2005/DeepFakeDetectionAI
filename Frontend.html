@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detector</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #2b5876, #4e4376);
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+        .container {
+            width: 40%;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-top: 80px;
+            transition: 0.3s;
+        }
+        h1 {
+            color: #fff;
+            font-size: 26px;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            border: none;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: 0.3s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            transform: scale(1.05);
+        }
+        #result, #uploadMessage {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .loading-spinner {
+            display: none;
+            width: 35px;
+            height: 35px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        img, video {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+        .result-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Deepfake Detector</h1>
+        <input type="file" id="fileInput" accept="image/*,video/*" onchange="displayUploadMessage()">
+        <p id="uploadMessage" style="display: none; color: #00ff00;">✔ File uploaded successfully!</p>
+        <button onclick="uploadFile()">Upload & Analyze</button>
+        <div class="loading-spinner" id="loadingSpinner"></div>
+        <p id="result"></p>
+        <img id="previewImage" />
+        <video id="previewVideo" controls></video>
+    </div>
+
+    <script>
+        function displayUploadMessage() {
+            document.getElementById('uploadMessage').style.display = 'block';
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const resultText = document.getElementById('result');
+            const previewImage = document.getElementById('previewImage');
+            const previewVideo = document.getElementById('previewVideo');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            if (fileInput.files.length === 0) {
+                alert("📂 Please select a file to analyze.");
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            if (file.type.startsWith("image")) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = "block";
+                    previewVideo.style.display = "none";
+                }
+                reader.readAsDataURL(file);
+            } else if (file.type.startsWith("video")) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewVideo.src = e.target.result;
+                    previewVideo.style.display = "block";
+                    previewImage.style.display = "none";
+                }
+                reader.readAsDataURL(file);
+            }
+
+            resultText.innerText = "";
+            resultText.style.display = "none";
+            loadingSpinner.style.display = "block";
+
+            fetch("http://localhost:5000/processing_", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingSpinner.style.display = "none";
+                resultText.style.display = "block";
+                
+                if (data.error) {
+                    resultText.innerHTML = `<div class="result-box" style="color: red;">❌ Error: ${data.error}</div>`;
+                } else if (data.deepfake_percentage) {
+                    resultText.innerHTML = `
+                        <div class="result-box">
+                            <strong>Deepfake Probability: ${data.deepfake_percentage}%</strong><br>
+                            🎞 Frames Analyzed: ${data.total_frames_analyzed}<br>
+                            ✅ Real: ${data.real_frames} | ❌ Fake: ${data.fake_frames}
+                        </div>
+                    `;
+                } else {
+                    resultText.innerHTML = `<div class="result-box" style="color: #28a745;">✅ ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                loadingSpinner.style.display = "none";
+                resultText.style.display = "block";
+                resultText.innerHTML = `<div class="result-box" style="color: red;">⚠️ An error occurred. Please try again.</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
