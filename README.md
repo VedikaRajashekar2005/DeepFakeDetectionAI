@@ -25,3 +25,6 @@ Now go to Docker desktop , go to images and run the image
 ![image](https://github.com/user-attachments/assets/86f48868-b5b2-42a1-a62d-f339429ba8ae)
 
 Run this in docker container , this redirects to output 
+
+![image](https://github.com/user-attachments/assets/abbfb7bb-1653-4e3d-a82c-12e46affb6c6)
+
